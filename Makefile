@@ -1,4 +1,15 @@
-TARGET := iphone:clang:latest:13.0
+# Must be an SDK present in $THEOS/sdks. Xcode's SDKs have no PrivateFrameworks
+# stubs, so `latest` picks them and the link fails.
+SDK_VER := 16.5
+
+ifeq ($(THEOS_PACKAGE_SCHEME),rootless)
+TARGET := iphone:clang:$(SDK_VER):15.0
+else ifeq ($(THEOS_PACKAGE_SCHEME),roothide)
+TARGET := iphone:clang:$(SDK_VER):15.0
+else
+TARGET := iphone:clang:$(SDK_VER):13.0
+endif
+
 INSTALL_TARGET_PROCESSES = SpringBoard
 
 ARCHS = arm64 arm64e
@@ -10,7 +21,7 @@ TWEAK_NAME = BetterCCBrightness
 $(TWEAK_NAME)_FILES = Tweak.x $(wildcard Masonry/Masonry/*.m)
 $(TWEAK_NAME)_LIBRARIES = Accessibility
 $(TWEAK_NAME)_FRAMEWORKS = MediaAccessibility
-$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = BackBoardServices ControlCenterUIKit CoreBrightness ManagedConfiguration SpringBoardUIServices   
+$(TWEAK_NAME)_PRIVATE_FRAMEWORKS = BackBoardServices ControlCenterUIKit CoreBrightness ManagedConfiguration SpringBoardUIServices
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc -Iinclude -Wno-objc-dictionary-duplicate-keys -Wno-missing-noescape -IMasonry -IMasonry/Masonry
 
 include $(THEOS_MAKE_PATH)/tweak.mk

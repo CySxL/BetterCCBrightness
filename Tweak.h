@@ -11,6 +11,9 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 
+// The /System paths below are system paths, not jailbreak paths, so they stay
+// as-is under rootless/roothide.
+
 // CCUI Layout
 extern CGFloat CCUISliderExpandedModuleContinuousCornerRadius();
 extern CGFloat CCUISliderExpandedContentModuleHeight();
