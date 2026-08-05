@@ -5,7 +5,7 @@ auto-brightness, reduce white point (with an intensity slider) and a Night Shift
 strength slider.
 
 All credit goes to [level3tjg](https://github.com/level3tjg/BetterCCBrightness),
-whose implementation this fork leaves intact. The only changes are to packaging,
+whose implementation I have left intact. The only changes are to packaging,
 so the project builds natively for roothide, which did not exist when the upstream
 releases were published. level3tjg is welcome to take any of it upstream, no need
 to ask.
@@ -33,10 +33,10 @@ actually have under `$THEOS/sdks`.
 ## Note for roothide users
 
 Upstream releases predate roothide, so running them there means converting a
-rootless `.deb`. In testing, a converted build did not always behave identically
-to one compiled for roothide directly; tapping outside the expanded module to
-collapse it did not always take effect. Building from source avoids the
-conversion step.
+rootless `.deb`. When I tested it, a converted build did not always behave
+identically to one compiled for roothide directly; tapping outside the expanded
+module to collapse it did not always take effect. Building from source avoids
+the conversion step.
 
 That is not a bug in the tweak. Collapsing on an outside tap is stock Control
 Center behaviour, and it works correctly on iOS 16.3 with a from-source build
