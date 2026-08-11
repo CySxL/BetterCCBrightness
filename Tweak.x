@@ -434,15 +434,21 @@ static UIFont *percentFont(CGFloat size) {
 %end
 
 static void add_image(const struct mach_header *mh, intptr_t vmaddr_slide) {
+  // A second pass over the same bundle would stack the hooks and add every
+  // button twice.
+  static BOOL hooked = NO;
+
   Dl_info info;
-  if (!dladdr(mh, &info)) return;
+  if (hooked || !dladdr(mh, &info)) return;
   if (!strcmp(info.dli_fname,
-              "/System/Library/ControlCenter/Bundles/DisplayModule.bundle/DisplayModule"))
+              "/System/Library/ControlCenter/Bundles/DisplayModule.bundle/DisplayModule")) {
+    hooked = YES;
     dispatch_async(dispatch_get_main_queue(), ^{
       class_addProtocol(%c(CCUIDisplayBackgroundViewController),
                         objc_getProtocol("MCProfileConnectionObserver"));
       %init(DisplayModuleHooks);
     });
+  }
 }
 
 %ctor {
