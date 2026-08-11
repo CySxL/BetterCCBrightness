@@ -1,5 +1,12 @@
 #import "Tweak.h"
 
+// The setting comes out of a managed configuration payload, so its type is not
+// ours to assume.
+static NSNumber *maxInactivitySetting(MCProfileConnection *connection) {
+  id value = [connection userValueForSetting:@"maxInactivity"];
+  return [value isKindOfClass:NSNumber.class] ? value : nil;
+}
+
 // The volume sliders are a subclass of CCUIContinuousSliderView, so the class
 // says nothing about which module a slider belongs to.
 static BOOL sliderIsInDisplayModule(UIView *slider) {
@@ -259,8 +266,8 @@ static UIFont *percentFont(CGFloat size) {
             hasSuffix:@"d73.ca"]
           ? 2
           : .25;
-  BOOL autoLockEnabled = [[[MCProfileConnection sharedConnection]
-                             userValueForSetting:@"maxInactivity"] intValue] != INT_MAX;
+  BOOL autoLockEnabled =
+      maxInactivitySetting([MCProfileConnection sharedConnection]).intValue != INT_MAX;
   self.autoLockButton.enabled = autoLockEnabled;
   self.autoLockButton.subtitle = [self _subtitleForTrueToneEnabled:autoLockEnabled];
   self.autoLockButton.glyphState = autoLockEnabled ? @"Locked" : @"Unlocked";
@@ -296,8 +303,10 @@ static UIFont *percentFont(CGFloat size) {
 - (void)profileConnectionDidReceiveEffectiveSettingsChangedNotification:
             (MCProfileConnection *)connection
                                                                userInfo:(NSDictionary *)userInfo {
-  NSNumber *maxInactivity = [connection userValueForSetting:@"maxInactivity"];
-  if ([maxInactivity integerValue] != INT_MAX) self.previousMaxInactivity = maxInactivity;
+  NSNumber *maxInactivity = maxInactivitySetting(connection);
+  // A read that comes back empty is not a timeout worth remembering.
+  if (maxInactivity && maxInactivity.intValue != INT_MAX)
+    self.previousMaxInactivity = maxInactivity;
 }
 %new
 - (void)_whitePointSliderEditingDidBegin:(CCUIContinuousSliderView *)slider {
@@ -326,7 +335,7 @@ static UIFont *percentFont(CGFloat size) {
 %new
 - (void)_toggleAutoLock {
   MCProfileConnection *connection = [MCProfileConnection sharedConnection];
-  BOOL autoLockEnabled = [[connection userValueForSetting:@"maxInactivity"] intValue] != INT_MAX;
+  BOOL autoLockEnabled = maxInactivitySetting(connection).intValue != INT_MAX;
   [connection setValue:autoLockEnabled ? @(INT_MAX) : self.previousMaxInactivity ?: @(30) forSetting:@"maxInactivity"];
   [self _updateState];
 }
