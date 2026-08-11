@@ -209,7 +209,6 @@ static UIFont *percentFont(CGFloat size) {
 
   NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
   paragraphStyle.alignment = NSTextAlignmentCenter;
-  // paragraphStyle.hyphenationFactor = 1.0f;
   self.autoBrightnessButton.buttonContainer.titleLabel.attributedText =
       [[NSMutableAttributedString alloc]
           initWithString:self.autoBrightnessButton.title
