@@ -189,10 +189,12 @@ static UIFont *percentFont(CGFloat size) {
   self.whitePointSliderView.value =
       1 - ((MADisplayFilterPrefGetReduceWhitePointIntensity() - .25) / .75);
 
-  float blueLightFilterStrength;
-  CBClient *client = ivarValue([%c(SBHarmonyController) sharedInstance], "_client");
-  [client.blueLightClient getStrength:&blueLightFilterStrength];
-  self.nightShiftSliderView.value = blueLightFilterStrength;
+  if (self.nightShiftSliderView) {
+    float blueLightFilterStrength = 0;
+    CBClient *client = ivarValue([%c(SBHarmonyController) sharedInstance], "_client");
+    [client.blueLightClient getStrength:&blueLightFilterStrength];
+    self.nightShiftSliderView.value = blueLightFilterStrength;
+  }
 
   ((CCUICAPackageView *)ivarValue(self, "_packageView")).hidden = YES;
 
