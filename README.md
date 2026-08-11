@@ -2,13 +2,14 @@
 
 Adds more controls to the expanded brightness module in Control Center: auto-lock,
 auto-brightness, reduce white point (with an intensity slider) and a Night Shift
-strength slider.
+strength slider. Every slider in the module, including the stock brightness one
+in the collapsed tile, draws its current level as a percentage.
 
-All credit goes to [level3tjg](https://github.com/level3tjg/BetterCCBrightness),
-whose implementation I have left intact. The only changes are to packaging,
-so the project builds natively for roothide, which did not exist when the upstream
-releases were published. level3tjg is welcome to take any of it upstream, no need
-to ask.
+All credit goes to [level3tjg](https://github.com/level3tjg/BetterCCBrightness).
+Apart from the percentage labels the implementation is his; the rest of the
+changes are to packaging, so the project builds natively for roothide, which did
+not exist when the upstream releases were published. level3tjg is welcome to take
+any of it upstream, no need to ask.
 
 ## Building
 
