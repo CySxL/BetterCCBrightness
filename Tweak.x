@@ -1,5 +1,48 @@
 #import "Tweak.h"
 
+// The volume sliders are a subclass of CCUIContinuousSliderView, so the class
+// says nothing about which module a slider belongs to.
+static BOOL sliderIsInDisplayModule(UIView *slider) {
+  static NSBundle *displayModule = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    displayModule = [NSBundle bundleForClass:%c(CCUIDisplayBackgroundViewController)];
+  });
+
+  for (UIResponder *responder = slider.nextResponder; responder;
+       responder = responder.nextResponder)
+    if ([responder isKindOfClass:UIViewController.class] &&
+        [[NSBundle bundleForClass:responder.class] isEqual:displayModule])
+      return YES;
+
+  return NO;
+}
+
+// The collapsed tile sits beside Control Center's volume slider, so it takes the
+// size a percentage is drawn at there.
+static CGFloat percentSize(CGFloat width) {
+  CGFloat expandedWidth = CCUISliderExpandedContentModuleWidth();
+  if (width < expandedWidth * .5) return 16;
+  return width < expandedWidth * .9 ? 20 : 25;
+}
+
+static UIFont *percentFont(CGFloat size) {
+  static NSMutableDictionary<NSNumber *, UIFont *> *fonts = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{ fonts = [NSMutableDictionary dictionary]; });
+
+  UIFont *font = fonts[@(size)];
+  if (font) return font;
+
+  font = [UIFont systemFontOfSize:size weight:UIFontWeightBold];
+  UIFontDescriptor *rounded =
+      [font.fontDescriptor fontDescriptorWithDesign:UIFontDescriptorSystemDesignRounded];
+  if (rounded) font = [UIFont fontWithDescriptor:rounded size:size];
+
+  fonts[@(size)] = font;
+  return font;
+}
+
 %group DisplayModuleHooks
 
 %hook CCUIDisplayBackgroundViewController
@@ -309,6 +352,61 @@
 %new
 - (void)_reduceWhitePointButtonPressed:(id)sender {
   [self _toggleReduceWhitePoint];
+}
+%end
+
+%hook CCUIContinuousSliderView
+// clang-format off
+%property(nonatomic, strong) UILabel *bccbPercentLabel;
+%property(nonatomic, strong) NSNumber *bccbShowsPercent;
+%property(nonatomic, assign) NSInteger bccbPercent;
+// clang-format on
+- (void)layoutSubviews {
+  %orig;
+  [self bccbUpdatePercentLabel];
+}
+%new
+- (void)bccbUpdatePercentLabel {
+  if (!self.bccbShowsPercent) {
+    if (!self.superview) return;
+    self.bccbShowsPercent = @(sliderIsInDisplayModule(self));
+  }
+  if (!self.bccbShowsPercent.boolValue) return;
+
+  UILabel *label = self.bccbPercentLabel;
+
+  if (!label) {
+    label = [UILabel new];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.userInteractionEnabled = NO;
+    label.adjustsFontSizeToFitWidth = YES;
+    label.minimumScaleFactor = .6;
+    self.bccbPercentLabel = label;
+    self.bccbPercent = -1;
+    [self addSubview:label];
+  }
+
+  CGFloat width = CGRectGetWidth(self.bounds);
+  CGFloat size = percentSize(width);
+  CGRect frame = CGRectMake(0, CGRectGetMidY(self.bounds) - size, width, size * 2);
+
+  // This runs on the drag path, so nothing is assigned that has not changed.
+  if (!CGRectEqualToRect(label.frame, frame)) {
+    label.frame = frame;
+    label.font = percentFont(size);
+  }
+
+  NSInteger percent = lroundf(self.value * 100);
+
+  if (percent != self.bccbPercent) {
+    self.bccbPercent = percent;
+    label.text = [NSString stringWithFormat:@"%ld%%", (long)percent];
+
+    // The label sits at the middle, so the fill reaches it at half.
+    label.textColor = percent >= 50 ? UIColor.blackColor : UIColor.whiteColor;
+  }
+
+  if (self.subviews.lastObject != label) [self bringSubviewToFront:label];
 }
 %end
 

@@ -42,6 +42,15 @@ extern void MADisplayFilterPrefSetReduceWhitePointIntensity(double);
 @property(nonatomic) BOOL useAlternateBackground;
 @end
 
+// Prefixed because other tweaks label these sliders too, and %new leaves the
+// first implementation of a selector in place.
+@interface CCUIContinuousSliderView ()
+@property(nonatomic) UILabel *bccbPercentLabel;
+@property(nonatomic) NSNumber *bccbShowsPercent;
+@property(nonatomic) NSInteger bccbPercent;
+- (void)bccbUpdatePercentLabel;
+@end
+
 @interface CCUICAPackageView ()
 @property(nonatomic) CGFloat scale;
 @end
