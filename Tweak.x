@@ -1,5 +1,12 @@
 #import "Tweak.h"
 
+// valueForKey: raises on an ivar that has been renamed rather than returning
+// nil, and an exception here is a safe mode.
+static id ivarValue(id object, const char *name) {
+  Ivar ivar = class_getInstanceVariable([object class], name);
+  return ivar ? object_getIvar(object, ivar) : nil;
+}
+
 // The setting comes out of a managed configuration payload, so its type is not
 // ours to assume.
 static NSNumber *maxInactivitySetting(MCProfileConnection *connection) {
@@ -69,15 +76,17 @@ static UIFont *percentFont(CGFloat size) {
 - (NSArray<CCUILabeledRoundButtonViewController *> *)buttons {
   Ivar footerButtonsIvar = class_getInstanceVariable(self.class, "_footerButtons");
   if (footerButtonsIvar) return object_getIvar(self, footerButtonsIvar);
-  return object_getIvar(self, class_getInstanceVariable(self.class, "_buttons"));
+  return ivarValue(self, "_buttons");
 }
 %new
 - (void)setButtons:(NSArray<CCUILabeledRoundButtonViewController *> *)footerButtons {
-  Ivar footerButtonsIvar = class_getInstanceVariable(self.class, "_footerButtons");
-  if (footerButtonsIvar)
+  if (class_getInstanceVariable(self.class, "_footerButtons")) {
     [self setFooterButtons:footerButtons];
-  else
-    object_setIvar(self, class_getInstanceVariable(self.class, "_buttons"), footerButtons);
+    return;
+  }
+
+  Ivar buttonsIvar = class_getInstanceVariable(self.class, "_buttons");
+  if (buttonsIvar) object_setIvar(self, buttonsIvar, footerButtons);
 }
 - (void)viewDidLoad {
   %orig;
@@ -181,11 +190,11 @@ static UIFont *percentFont(CGFloat size) {
       1 - ((MADisplayFilterPrefGetReduceWhitePointIntensity() - .25) / .75);
 
   float blueLightFilterStrength;
-  CBClient *client = [[%c(SBHarmonyController) sharedInstance] valueForKey:@"_client"];
+  CBClient *client = ivarValue([%c(SBHarmonyController) sharedInstance], "_client");
   [client.blueLightClient getStrength:&blueLightFilterStrength];
   self.nightShiftSliderView.value = blueLightFilterStrength;
 
-  ((CCUICAPackageView *)[self valueForKey:@"_packageView"]).hidden = YES;
+  ((CCUICAPackageView *)ivarValue(self, "_packageView")).hidden = YES;
 
   [self.view setNeedsUpdateConstraints];
 }
@@ -245,7 +254,7 @@ static UIFont *percentFont(CGFloat size) {
   [self.nightShiftSliderView setContinuousSliderCornerRadius:continuousCornerRadius];
   self.nightShiftMaterialView._continuousCornerRadius = continuousCornerRadius;
 
-  CCUICAPackageView *packageView = [self valueForKey:@"_packageView"];
+  CCUICAPackageView *packageView = ivarValue(self, "_packageView");
 
   [self.autoBrightnessButton.view mas_remakeConstraints:^(MASConstraintMaker *make) {
     make.width.equalTo(self.styleModeButton.view);
@@ -324,12 +333,12 @@ static UIFont *percentFont(CGFloat size) {
 }
 %new
 - (void)_nightShiftSliderValueDidChange:(CCUIContinuousSliderView *)slider {
-  CBClient *client = [[%c(SBHarmonyController) sharedInstance] valueForKey:@"_client"];
+  CBClient *client = ivarValue([%c(SBHarmonyController) sharedInstance], "_client");
   [client.blueLightClient setStrength:slider.value commit:NO];
 }
 %new
 - (void)_nightShiftSliderEditingDidEnd:(CCUIContinuousSliderView *)slider {
-  CBClient *client = [[%c(SBHarmonyController) sharedInstance] valueForKey:@"_client"];
+  CBClient *client = ivarValue([%c(SBHarmonyController) sharedInstance], "_client");
   [client.blueLightClient setStrength:slider.value commit:YES];
 }
 %new

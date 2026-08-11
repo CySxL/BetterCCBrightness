@@ -10,6 +10,7 @@
 #import <SpringBoardUIServices/SBUIProudLockIconView.h>
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
+#import <objc/runtime.h>
 
 // The /System paths below are system paths, not jailbreak paths, so they stay
 // as-is under rootless/roothide.
