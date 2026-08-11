@@ -7,6 +7,17 @@ static id ivarValue(id object, const char *name) {
   return ivar ? object_getIvar(object, ivar) : nil;
 }
 
+static NSParagraphStyle *centeredParagraphStyle(void) {
+  static NSParagraphStyle *style = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    NSMutableParagraphStyle *centered = [[NSMutableParagraphStyle alloc] init];
+    centered.alignment = NSTextAlignmentCenter;
+    style = centered;
+  });
+  return style;
+}
+
 // The setting comes out of a managed configuration payload, so its type is not
 // ours to assume.
 static NSNumber *maxInactivitySetting(MCProfileConnection *connection) {
@@ -207,12 +218,10 @@ static UIFont *percentFont(CGFloat size) {
 
   CGFloat heightOffset = -(CCUISliderExpandedContentModuleHeight() / 12);
 
-  NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-  paragraphStyle.alignment = NSTextAlignmentCenter;
   self.autoBrightnessButton.buttonContainer.titleLabel.attributedText =
-      [[NSMutableAttributedString alloc]
+      [[NSAttributedString alloc]
           initWithString:self.autoBrightnessButton.title
-              attributes:@{NSParagraphStyleAttributeName : paragraphStyle}];
+              attributes:@{NSParagraphStyleAttributeName : centeredParagraphStyle()}];
 
   [self.whitePointSliderView mas_remakeConstraints:^(MASConstraintMaker *make) {
     make.width.equalTo(sliderWidth);
@@ -387,11 +396,14 @@ static UIFont *percentFont(CGFloat size) {
 }
 %new
 - (void)bccbUpdatePercentLabel {
-  if (!self.bccbShowsPercent) {
+  NSNumber *showsPercent = self.bccbShowsPercent;
+
+  if (!showsPercent) {
     if (!self.superview) return;
-    self.bccbShowsPercent = @(sliderIsInDisplayModule(self));
+    showsPercent = @(sliderIsInDisplayModule(self));
+    self.bccbShowsPercent = showsPercent;
   }
-  if (!self.bccbShowsPercent.boolValue) return;
+  if (!showsPercent.boolValue) return;
 
   UILabel *label = self.bccbPercentLabel;
 
