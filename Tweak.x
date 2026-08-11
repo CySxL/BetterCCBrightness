@@ -289,7 +289,8 @@ static UIFont *percentFont(CGFloat size) {
 - (void)startObservingStateChanges {
   MCProfileConnection *connection = [MCProfileConnection sharedConnection];
   [self profileConnectionDidReceiveEffectiveSettingsChangedNotification:connection userInfo:nil];
-  [[MCProfileConnection sharedConnection] addObserver:self];
+  [connection addObserver:self];
+  self.observingStateChanges = YES;
 }
 %new
 - (void)profileConnectionDidReceiveEffectiveSettingsChangedNotification:
