@@ -1,4 +1,5 @@
 .theos/
 packages/
 .DS_Store
-note.md
+note.md*
+note-archive/
