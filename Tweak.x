@@ -43,12 +43,20 @@ static BOOL sliderIsInDisplayModule(UIView *slider) {
   return NO;
 }
 
-// The collapsed tile sits beside Control Center's volume slider, so it takes the
-// size a percentage is drawn at there.
-static CGFloat percentSize(CGFloat width) {
+// The sizes chosen on the 14 Pro Max, kept in proportion elsewhere. The
+// collapsed tile scales with its own width, 61.3 there, as BetterCCVolume does
+// beside it, so two tiles of one width always match. The rest scale with the
+// module's own slider width, 150 there. Half points keep the font cache small.
+static CGFloat percentSize(CGFloat width, BOOL added) {
   CGFloat expandedWidth = CCUISliderExpandedContentModuleWidth();
-  if (width < expandedWidth * .5) return 16;
-  return width < expandedWidth * .9 ? 20 : 25;
+  CGFloat size;
+  if (added)
+    size = 20 * expandedWidth / 150;
+  else if (width >= expandedWidth * .9)
+    size = 25 * expandedWidth / 150;
+  else
+    size = 16 * width / 61.3;
+  return roundf(size * 2) / 2;
 }
 
 static UIFont *percentFont(CGFloat size) {
@@ -146,6 +154,8 @@ static UIFont *percentFont(CGFloat size) {
   [self.view addSubview:self.autoBrightnessButton.view];
 
   self.whitePointSliderView = [CCUIContinuousSliderView new];
+  // 2 marks the sliders this tweak adds, which take their own percentage size.
+  self.whitePointSliderView.bccbShowsPercent = @2;
   [self.whitePointSliderView addTarget:self
                                 action:@selector(_whitePointSliderEditingDidBegin:)
                       forControlEvents:UIControlEventEditingDidBegin];
@@ -180,6 +190,7 @@ static UIFont *percentFont(CGFloat size) {
 
   if ([CBClient supportsBlueLightReduction]) {
     self.nightShiftSliderView = [CCUIContinuousSliderView new];
+    self.nightShiftSliderView.bccbShowsPercent = @2;
     [self.nightShiftSliderView addTarget:self
                                   action:@selector(_nightShiftSliderValueDidChange:)
                         forControlEvents:UIControlEventValueChanged];
@@ -419,7 +430,7 @@ static UIFont *percentFont(CGFloat size) {
   }
 
   CGFloat width = CGRectGetWidth(self.bounds);
-  CGFloat size = percentSize(width);
+  CGFloat size = percentSize(width, showsPercent.intValue == 2);
   CGRect frame = CGRectMake(0, CGRectGetMidY(self.bounds) - size, width, size * 2);
 
   // This runs on the drag path, so nothing is assigned that has not changed.
