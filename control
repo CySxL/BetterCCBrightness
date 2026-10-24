@@ -1,6 +1,6 @@
 Package: com.level3tjg.betterccbrightness
 Name: BetterCCBrightness
-Version: 2.0.0
+Version: 2.0.1
 Architecture: iphoneos-arm
 Description: Add more controls to the expanded brightness CC module
 Maintainer: CySxL
