@@ -3,6 +3,7 @@
 #import <ControlCenterUIKit/CCUILabeledRoundButtonViewController.h>
 #import <CoreBrightness/CBClient.h>
 #import <DisplayModule/CCUIDisplayBackgroundViewController.h>
+#import <DisplayModule/CCUIDisplayModuleViewController.h>
 #import <ManagedConfiguration/MCProfileConnection.h>
 #import <Masonry/Masonry.h>
 #import <MaterialKit/MTMaterialView.h>
@@ -50,6 +51,16 @@ extern void MADisplayFilterPrefSetReduceWhitePointIntensity(double);
 @property(nonatomic) NSNumber *bccbShowsPercent;
 @property(nonatomic) NSInteger bccbPercent;
 - (void)bccbUpdatePercentLabel;
+@end
+
+@interface CCUIModuleCollectionViewController : UIViewController
+- (void)didUpdateHomeGestureDismissalAllowed:(BOOL)allowed
+                    forModuleWithIdentifier:(NSString *)identifier;
+@end
+
+@interface CCUIContentModuleContainerViewController : UIViewController
+@property(nonatomic, readonly) NSString *moduleIdentifier;
+@property(nonatomic, weak) id delegate;
 @end
 
 @interface CCUICAPackageView ()

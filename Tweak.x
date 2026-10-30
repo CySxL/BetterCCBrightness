@@ -455,6 +455,35 @@ static UIFont *percentFont(CGFloat size) {
 
 %end
 
+// Apple's expanded modules close on a swipe up from the bottom once they say
+// they may. This one has no module context to say it through, so it goes to
+// the collection directly. The container is presented on its own while
+// expanded, so its parent is nil and its delegate is the collection.
+%group SwipeDismissHooks
+
+%hook CCUIDisplayModuleViewController
+- (void)willTransitionToExpandedContentMode:(BOOL)expanded {
+  %orig;
+
+  UIViewController *container = self.parentViewController;
+  Class containerClass = objc_getClass("CCUIContentModuleContainerViewController");
+  if (!containerClass || ![container isKindOfClass:containerClass]) return;
+
+  CCUIContentModuleContainerViewController *moduleContainer =
+      (CCUIContentModuleContainerViewController *)container;
+  NSString *identifier = moduleContainer.moduleIdentifier;
+  id collection = moduleContainer.delegate;
+  SEL update = @selector(didUpdateHomeGestureDismissalAllowed:forModuleWithIdentifier:);
+  if (![identifier isKindOfClass:NSString.class] || ![collection respondsToSelector:update])
+    return;
+
+  [(CCUIModuleCollectionViewController *)collection didUpdateHomeGestureDismissalAllowed:expanded
+                                                               forModuleWithIdentifier:identifier];
+}
+%end
+
+%end
+
 static void add_image(const struct mach_header *mh, intptr_t vmaddr_slide) {
   // A second pass over the same bundle would stack the hooks and add every
   // button twice.
@@ -469,6 +498,7 @@ static void add_image(const struct mach_header *mh, intptr_t vmaddr_slide) {
       class_addProtocol(%c(CCUIDisplayBackgroundViewController),
                         objc_getProtocol("MCProfileConnectionObserver"));
       %init(DisplayModuleHooks);
+      if (objc_getClass("CCUIDisplayModuleViewController")) %init(SwipeDismissHooks);
     });
   }
 }
