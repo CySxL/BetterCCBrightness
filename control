@@ -1,6 +1,6 @@
 Package: com.cysxl.betterccbrightness
 Name: BetterCCBrightness
-Version: 2.0.2
+Version: 2.0.3
 Architecture: iphoneos-arm
 Depends: mobilesubstrate (>= 0.9.5000), firmware (>= 13.0)
 Conflicts: com.level3tjg.betterccbrightness
