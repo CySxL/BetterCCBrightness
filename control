@@ -1,8 +1,11 @@
-Package: com.level3tjg.betterccbrightness
+Package: com.cysxl.betterccbrightness
 Name: BetterCCBrightness
 Version: 2.0.2
 Architecture: iphoneos-arm
 Depends: mobilesubstrate (>= 0.9.5000), firmware (>= 13.0)
+Conflicts: com.level3tjg.betterccbrightness
+Replaces: com.level3tjg.betterccbrightness
+Provides: com.level3tjg.betterccbrightness
 Description: A fork of level3tjg's BetterCCBrightness.
  Adds more controls to the expanded brightness module in Control Center.
  * toggle auto-lock & auto-brightness.
