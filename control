@@ -2,8 +2,13 @@ Package: com.level3tjg.betterccbrightness
 Name: BetterCCBrightness
 Version: 2.0.2
 Architecture: iphoneos-arm
-Description: Add more controls to the expanded brightness CC module
-Maintainer: CySxL
-Author: level3tjg
-Section: Tweaks
 Depends: mobilesubstrate (>= 0.9.5000), firmware (>= 13.0)
+Description: A fork of level3tjg's BetterCCBrightness.
+ Adds more controls to the expanded brightness module in Control Center.
+ * toggle auto-lock & auto-brightness.
+ * reduce white point with an intensity slider.
+ * set Night Shift strength with a slider.
+ * show each brightness slider's level as a percentage.
+Author: level3tjg, CySxL
+Maintainer: CySxL
+Section: Tweaks
